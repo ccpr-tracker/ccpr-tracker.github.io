@@ -344,7 +344,17 @@ html[dir="rtl"] .ghead[aria-expanded="false"] .chev{transform:rotate(90deg)}
 .gtools{display:flex;gap:8px;align-items:center}
 .demobar .dsw{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .demobar button[aria-pressed="true"]{background:#fff;color:#4B0A78;border-color:#fff}
-.fc[data-fs="all"][aria-pressed="true"]{color:var(--surface)}
+.fc[data-fs="all"][aria-pressed="true"]{color:var(--accent-ink)}
+.chipsbar{row-gap:10px;column-gap:18px;align-items:center}
+.fgrp{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.fsw{padding-inline-start:18px;border-inline-start:1px solid var(--line)}
+.flbl{font-size:12px;color:var(--ink-soft)}
+.fc.ft{border-radius:10px}
+.fc.ft i{width:16px;height:16px;border-radius:5px;background:transparent;border:1.5px solid var(--c);display:inline-flex;align-items:center;justify-content:center}
+.fc.ft i svg{width:11px;height:11px}
+.fc.ft[aria-pressed="true"]{background:color-mix(in srgb,var(--c) 14%,var(--surface));color:var(--ink);border-color:var(--c);animation:none}
+.fc.ft[aria-pressed="true"] i{background:var(--c);color:#fff}
+@media (max-width:820px){.fsw{padding-inline-start:0;border-inline-start:0}}
 .gdemo{display:flex;gap:8px;flex-wrap:wrap}
 .gdemo .btn{flex:1 1 150px}
 #repHost{position:fixed;inset:0;z-index:70;overflow:auto;background:#E3E9F1;color-scheme:light;
@@ -513,7 +523,7 @@ Object.assign(AR, {"More details":"تفاصيل أكثر","Fewer details":"تف�
   "Upload photos file":"رفع ملف الصور","{0} photos loaded":"{0} صورة محمّلة","No photos yet.":"ما في صور حتى الآن.",
   "Photos show next to names. Only signed-in team members can see them.":"الصور تظهر بجنب الأسماء، ويشوفها أعضاء الفريق المسجلين فقط.",
   "Photo: automatic":"الصورة: تلقائي","{0} photos added.":"تمت إضافة {0} صورة.","This isn’t a team photos file.":"هذا مو ملف صور الفريق.","Photo updated.":"تم تحديث الصورة.","Photo":"الصورة"});
-Object.assign(AR, {"All":"الكل","Past due":"تجاوزت موعدها","Add person":"إضافة شخص","Search or type a name":"ابحث أو اكتب اسم","Remove":"إزالة",
+Object.assign(AR, {"All":"الكل","Past due":"تجاوزت موعدها","Past due date":"فات تاريخ تسليمها","Show only":"اعرض فقط:","Status":"الحالة","Add person":"إضافة شخص","Search or type a name":"ابحث أو اكتب اسم","Remove":"إزالة",
   "Nobody yet. Add the first person.":"ما في أحد حتى الآن. أضف أول شخص.","No match. Press Enter to add this name.":"ما في نتيجة. اضغط Enter لإضافة الاسم.","Add “{0}”":"إضافة «{0}»",
   "Demo: try anything. Nothing here is saved to the cloud or seen by the team.":"نسخة تجريبية: جرّب أي شي. لا شيء هنا ينحفظ في السحابة ولا يشوفه الفريق.","Reset demo":"إعادة ضبط التجربة",
   "Enter the demo":"ادخل التجربة","Try the demo":"جرّب النسخة التجريبية","How to use":"طريقة الاستخدام","Open the real tracker":"افتح التراكر الحقيقي",
@@ -793,12 +803,15 @@ var CHEV = '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentCol
 function chipsBar(board){
   var f = UI.f[board], all = D.tasks.filter(function(t){ return t.board===board; });
   function fc(key, label, n, on, s, c){ return '<button type="button" class="fc" data-fs="'+key+'" aria-pressed="'+on+'"'+(s?' data-s="'+s+'"':'')+' style="--c:'+c+'"><i></i><span>'+label+'</span><b class="num">'+n+'</b></button>'; }
+  /* Two clear groups: the status chips (All + six statuses, which always add up to All), and two on/off switches that narrow any status. */
+  function tg(key, label, n, on, c){ return '<button type="button" class="fc ft" data-fs="'+key+'" aria-pressed="'+on+'" style="--c:'+c+'"><i aria-hidden="true">'+(on?CHECK:'')+'</i><span>'+label+'</span><b class="num">'+n+'</b></button>'; }
   return '<div class="chipsbar" role="group" aria-label="Quick filters">'+
-    fc("all","All",countIf(board,{status:"",mine:false,late:false}),!f.status&&!f.mine&&!f.late,"","var(--ink)")+
-    fc("mine","Mine",countIf(board,{mine:true}),f.mine,"","var(--accent)")+
-    fc("late","Past due",countIf(board,{late:true}),f.late,"dl","var(--dl)")+
-    STATUS.map(function(s){ return fc("st:"+s, s, countIf(board,{status:s}), f.status===s, ST_KEY[s], "var("+ST_VAR[s]+")"); }).join("")+'</div>';
+    '<span class="fgrp" role="group" aria-label="Status">'+fc("all","All",countIf(board,{status:""}),!f.status,"","var(--accent)")+
+    STATUS.map(function(s){ return fc("st:"+s, s, countIf(board,{status:s}), f.status===s, ST_KEY[s], "var("+ST_VAR[s]+")"); }).join("")+'</span>'+
+    '<span class="fgrp fsw" role="group" aria-label="Show only"><span class="flbl">Show only</span>'+tg("mine","Mine",countIf(board,{mine:true}),f.mine,"var(--accent)")+
+    tg("late","Past due date",countIf(board,{late:true}),f.late,"var(--dl)")+'</span></div>';
 }
+var CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg>';
 var DETAIL_BTN = '<button type="button" class="btn ghost sm" data-detail><span class="s-on">More details</span><span class="s-off">Simple view</span></button>';
 /* ---------- people directory (names, titles, photos) ---------- */
 var PHOTO_OK = /^data:image\/(?:jpeg|png);base64,[A-Za-z0-9+\/=]+$/;
@@ -1060,7 +1073,7 @@ function viewTasks(board){
     '<select class="field xd" data-f="person" aria-label="Owner" data-nt>'+opt("",f.person,T("Anyone"))+ownersOf(board).map(function(x){ return opt(x,f.person); }).join("")+'</select>'+
     '<button type="button" class="btn ghost sm xd" data-ft="ceo" aria-pressed="'+f.ceo+'">CEO decision</button>'+
     (SIMPLE && hiddenFilters(f) ? '<button type="button" class="btn ghost sm" data-clearf aria-pressed="true">Filtered · clear</button>' : '')+
-    '<span class="sp"></span><span class="count"><span class="num">'+list.length+'</span> of <span class="num">'+total+'</span></span>'+
+    '<span class="sp"></span><span class="count xd"><span class="num">'+list.length+'</span> of <span class="num">'+total+'</span></span>'+
     '<button type="button" class="btn ghost sm xd" data-mode="table" aria-pressed="'+(mode==="table")+'">List</button>'+
     '<button type="button" class="btn ghost sm xd" data-mode="board" aria-pressed="'+(mode==="board")+'">Board</button>'+'<button type="button" class="btn ghost sm" data-report>Executive report</button>'+DETAIL_BTN+
     '<button type="button" class="btn sm" data-new="task">New task</button></div>'+chipsBar(board);
@@ -1191,7 +1204,7 @@ view.addEventListener("click", function(e){
   if((b = t.closest("[data-mode]"))){ UI.mode[UI.view] = b.dataset.mode; render(); return; }
   if((b = t.closest("[data-clearf]"))){ var cf = UI.f[UI.view]; cf.team = cf.prio = cf.person = ""; cf.ceo = false; render(); return; }
   if((b = t.closest("[data-fs]"))){ var k = b.dataset.fs, ff = UI.f[UI.view];
-    if(k==="all"){ ff.status = ""; ff.mine = false; ff.late = false; } else if(k==="mine") ff.mine = !ff.mine; else if(k==="late") ff.late = !ff.late; else { var s = k.slice(3); ff.status = ff.status===s ? "" : s; }
+    if(k==="all"){ ff.status = ""; } else if(k==="mine") ff.mine = !ff.mine; else if(k==="late") ff.late = !ff.late; else { var s = k.slice(3); ff.status = ff.status===s ? "" : s; }
     render(); return; }
   if((b = t.closest("[data-col]"))){ UI.col[b.dataset.col] = !UI.col[b.dataset.col]; render(); return; }
   if((b = t.closest("[data-pplpick]"))){ $("pplFile").click(); return; }
